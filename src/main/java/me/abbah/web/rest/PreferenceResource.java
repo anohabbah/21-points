@@ -3,6 +3,7 @@ package me.abbah.web.rest;
 import me.abbah.domain.Preference;
 import me.abbah.repository.PreferenceRepository;
 import me.abbah.repository.search.PreferenceSearchRepository;
+import me.abbah.security.SecurityUtils;
 import me.abbah.web.rest.errors.BadRequestAlertException;
 
 import io.github.jhipster.web.util.HeaderUtil;
@@ -152,4 +153,20 @@ public class PreferenceResource {
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
         }
+
+    @GetMapping("/my-preferences")
+    public ResponseEntity<Preference> getUserPreferences() {
+        String username = SecurityUtils.getCurrentUserLogin().get();
+        log.debug("REST request to get preferences : {}", username);
+
+        Optional<Preference> preferences = this.preferenceRepository.findOneByUserLogin(username);
+
+        if (preferences.isPresent()) {
+            return new ResponseEntity<>(preferences.get(), HttpStatus.OK);
+        }
+
+        Preference defaultPreferences = new Preference()
+            .weeklyGoal(10);
+        return new ResponseEntity<>(defaultPreferences, HttpStatus.OK);
+    }
 }

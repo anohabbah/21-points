@@ -11,6 +11,7 @@ import me.abbah.web.rest.errors.BadRequestAlertException;
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.PaginationUtil;
 import io.github.jhipster.web.util.ResponseUtil;
+import me.abbah.web.rest.vm.PointPerWeek;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +27,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -171,4 +175,36 @@ public class PointResource {
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
         }
+
+    @GetMapping("/points-this-week")
+    public ResponseEntity<PointPerWeek> getPointsThisWeek(
+        @RequestParam(value = "tz", required = false) String timezone
+    ) {
+        LocalDate now = LocalDate.now();
+        if (timezone != null) {
+            now = LocalDate.now(ZoneId.of(timezone));
+        }
+
+        LocalDate startOfWeek = now.with(DayOfWeek.MONDAY);
+        LocalDate endOfWeek = now.with(DayOfWeek.SUNDAY);
+        log.debug("Looking for points between {} and {}", startOfWeek, endOfWeek);
+
+        List<Point> points = this.pointRepository.findAllByDateBetweenAndUserLogin(
+            startOfWeek,
+            endOfWeek,
+            SecurityUtils.getCurrentUserLogin().get()
+        );
+
+        return calculatePoints(startOfWeek, points);
+    }
+
+    private ResponseEntity<PointPerWeek> calculatePoints(LocalDate startOfWeek, List<Point> points) {
+        Integer pointsCount = points.stream()
+            .mapToInt(p -> p.getExercise() + p.getAlcohol() + p.getMeals())
+            .sum();
+
+        PointPerWeek count = new PointPerWeek(startOfWeek, pointsCount);
+
+        return new ResponseEntity<>(count, HttpStatus.OK);
+    }
 }

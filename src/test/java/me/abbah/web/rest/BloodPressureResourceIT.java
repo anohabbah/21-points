@@ -2,12 +2,13 @@ package me.abbah.web.rest;
 
 import me.abbah.TwentyOnePointsApp;
 import me.abbah.domain.BloodPressure;
+import me.abbah.domain.User;
 import me.abbah.repository.BloodPressureRepository;
+import me.abbah.repository.UserRepository;
 import me.abbah.repository.search.BloodPressureSearchRepository;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,19 +19,26 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.WebApplicationContext;
+
 import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
 
 /**
  * Integration tests for the {@link BloodPressureResource} REST controller.
@@ -53,6 +61,9 @@ public class BloodPressureResourceIT {
     @Autowired
     private BloodPressureRepository bloodPressureRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     /**
      * This repository is mocked in the me.abbah.repository.search test package.
      *
@@ -66,6 +77,9 @@ public class BloodPressureResourceIT {
 
     @Autowired
     private MockMvc restBloodPressureMockMvc;
+
+    @Autowired
+    private WebApplicationContext context;
 
     private BloodPressure bloodPressure;
 
@@ -161,7 +175,7 @@ public class BloodPressureResourceIT {
             .andExpect(jsonPath("$.[*].systolic").value(hasItem(DEFAULT_SYSTOLIC)))
             .andExpect(jsonPath("$.[*].diastolic").value(hasItem(DEFAULT_DIASTOLIC)));
     }
-    
+
     @Test
     @Transactional
     public void getBloodPressure() throws Exception {
@@ -276,5 +290,78 @@ public class BloodPressureResourceIT {
             .andExpect(jsonPath("$.[*].timestamp").value(hasItem(DEFAULT_TIMESTAMP.toString())))
             .andExpect(jsonPath("$.[*].systolic").value(hasItem(DEFAULT_SYSTOLIC)))
             .andExpect(jsonPath("$.[*].diastolic").value(hasItem(DEFAULT_DIASTOLIC)));
+    }
+
+    private void createBloodPressureByMonth(ZonedDateTime firstDate, ZonedDateTime firstDayOfLastMonth) {
+        User user = this.userRepository.findOneByLogin("user").get();
+        bloodPressure = new BloodPressure()
+            .timestamp(firstDate.toLocalDate())
+            .systolic(120)
+            .diastolic(80)
+            .user(user);
+        bloodPressureRepository.saveAndFlush(bloodPressure);
+        bloodPressure = new BloodPressure()
+            .timestamp(firstDate.plusDays(10).toLocalDate())
+            .systolic(125)
+            .diastolic(75)
+            .user(user);
+        bloodPressureRepository.saveAndFlush(bloodPressure);
+        bloodPressure = new BloodPressure()
+            .timestamp(firstDate.plusDays(20).toLocalDate())
+            .systolic(100)
+            .diastolic(69)
+            .user(user);
+        bloodPressureRepository.saveAndFlush(bloodPressure);
+
+        // last month
+        bloodPressure = new BloodPressure()
+            .timestamp(firstDayOfLastMonth.toLocalDate())
+            .systolic(130)
+            .diastolic(90)
+            .user(user);
+        bloodPressureRepository.saveAndFlush(bloodPressure);
+        bloodPressure = new BloodPressure()
+            .timestamp(firstDayOfLastMonth.plusDays(11).toLocalDate())
+            .systolic(135)
+            .diastolic(85)
+            .user(user);
+        bloodPressureRepository.saveAndFlush(bloodPressure);
+        bloodPressure = new BloodPressure()
+            .timestamp(firstDayOfLastMonth.plusDays(23).toLocalDate())
+            .systolic(130)
+            .diastolic(75)
+            .user(user);
+        bloodPressureRepository.saveAndFlush(bloodPressure);
+    }
+    @Test
+    @Transactional
+    public void getBloodPressureForLast30Days() throws Exception {
+        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime twentyNineDaysAgo = now.minusDays(29);
+        ZonedDateTime firstDayOfLastMonth = now.withDayOfMonth(1).minusMonths(1);
+        createBloodPressureByMonth(twentyNineDaysAgo, firstDayOfLastMonth);
+
+        // create security-aware mockMvc
+        restBloodPressureMockMvc = MockMvcBuilders
+            .webAppContextSetup(context)
+            .apply(springSecurity())
+            .build();
+
+        // Get all the blood pressure readings
+        restBloodPressureMockMvc.perform(get("/api/blood-pressures")
+            .with(user("user").roles("USER")))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$", hasSize(6)));
+
+        // Get the blood pressure readings for the last 30 days
+        restBloodPressureMockMvc.perform(get("/api/bp-by-days/{days}", 30)
+            .with(user("user").roles("USER")))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.period").value("Last 30 Days"))
+            .andExpect(jsonPath("$.readings.[*].systolic").value(hasItem(120)))
+            .andExpect(jsonPath("$.readings.[*].diastolic").value(hasItem(69)));
     }
 }

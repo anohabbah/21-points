@@ -1,5 +1,6 @@
 {
   "home": {
+    "getMoving": "No points yet this week, better get moving !",
     "title": "Welcome, Java Hipster!",
     "subtitle": "This is your homepage",
     "logged": {
