@@ -1,36 +1,51 @@
-<div>
-    <h2 id="page-heading">
-        <span jhiTranslate="twentyOnePointsApp.point.home.title">Points</span>
+<div class="row">
+    <div class="col-md-8">
+        <h2 id="page-heading">
+            <span jhiTranslate="twentyOnePointsApp.point.home.title">Points</span>
+        </h2>
+    </div>
 
-        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-point" [routerLink]="['/point/new']">
+    <div class="col-md-4 text-right">
+        <button
+            id="jh-create-entity"
+            class="btn btn-primary float-right jh-create-entity create-point"
+            [routerLink]="['/point/new']"
+            [ngbTooltip]="addTooltip"
+            placement="bottom"
+        >
             <fa-icon icon="plus"></fa-icon>
-            <span class="hidden-sm-down"  jhiTranslate="twentyOnePointsApp.point.home.createLabel">
-            Create a new Point
-            </span>
+            <ng-template #addTooltip>
+                <span class="hidden-sm-down"  jhiTranslate="twentyOnePointsApp.point.home.createLabel">
+                    Add Points
+                </span>
+            </ng-template>
         </button>
-    </h2>
+
+        <form name="searchForm" class="form-inline">
+            <div class="input-group w-100 mr-1">
+                <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="currentSearch"
+                    id="currentSearch"
+                    name="currentSearch"
+                    placeholder="{{ 'twentyOnePointsApp.point.home.search' | translate }}"
+                />
+
+                <button class="input-group-append btn btn-info" (click)="search(currentSearch)">
+                    <fa-icon icon="search"></fa-icon>
+                </button>
+
+                <button class="input-group-append btn btn-danger" (click)="search('')" *ngIf="currentSearch">
+                    <fa-icon icon="trash-alt"></fa-icon>
+                </button>
+            </div>
+        </form>
+    </div>
 
     <jhi-alert-error></jhi-alert-error>
 
     <jhi-alert></jhi-alert>
-
-    <div class="row">
-        <div class="col-sm-12">
-            <form name="searchForm" class="form-inline">
-                <div class="input-group w-100 mt-3">
-                    <input type="text" class="form-control" [(ngModel)]="currentSearch" id="currentSearch" name="currentSearch" placeholder="{{ 'twentyOnePointsApp.point.home.search' | translate }}">
-
-                    <button class="input-group-append btn btn-info" (click)="search(currentSearch)">
-                        <fa-icon icon="search"></fa-icon>
-                    </button>
-
-                    <button class="input-group-append btn btn-danger" (click)="search('')" *ngIf="currentSearch">
-                        <fa-icon icon="trash-alt"></fa-icon>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <div class="alert alert-warning" id="no-result" *ngIf="points?.length === 0">
         <span jhiTranslate="twentyOnePointsApp.point.home.notFound">No points found</span>
@@ -40,23 +55,56 @@
         <table class="table table-striped" aria-describedby="page-heading">
             <thead>
                 <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" [callback]="loadPage.bind(this)">
-                    <th scope="col"  jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon icon="sort"></fa-icon></th>
-                    <th scope="col"  jhiSortBy="date"><span jhiTranslate="twentyOnePointsApp.point.date">Date</span> <fa-icon icon="sort"></fa-icon></th>
-                    <th scope="col"  jhiSortBy="exercise"><span jhiTranslate="twentyOnePointsApp.point.exercise">Exercise</span> <fa-icon icon="sort"></fa-icon></th>
-                    <th scope="col"  jhiSortBy="meals"><span jhiTranslate="twentyOnePointsApp.point.meals">Meals</span> <fa-icon icon="sort"></fa-icon></th>
-                    <th scope="col"  jhiSortBy="alcohol"><span jhiTranslate="twentyOnePointsApp.point.alcohol">Alcohol</span> <fa-icon icon="sort"></fa-icon></th>
-                    <th scope="col"  jhiSortBy="notes"><span jhiTranslate="twentyOnePointsApp.point.notes">Notes</span> <fa-icon icon="sort"></fa-icon></th>
-                    <th scope="col"  jhiSortBy="user.login"><span jhiTranslate="twentyOnePointsApp.point.user">User</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="date">
+                        <span jhiTranslate="twentyOnePointsApp.point.date">Date</span>
+                        <fa-icon icon="sort"></fa-icon>
+                    </th>
+                    <th class="text-center" scope="col"  jhiSortBy="exercise">
+                        <span jhiTranslate="twentyOnePointsApp.point.exercise">Exercise</span>
+                        <fa-icon icon="sort"></fa-icon>
+                    </th>
+                    <th class="text-center" scope="col"  jhiSortBy="meals">
+                        <span jhiTranslate="twentyOnePointsApp.point.meals">Meals</span>
+                        <fa-icon icon="sort"></fa-icon>
+                    </th>
+                    <th class="text-center" scope="col"  jhiSortBy="alcohol">
+                        <span jhiTranslate="twentyOnePointsApp.point.alcohol">Alcohol</span>
+                        <fa-icon icon="sort"></fa-icon>
+                    </th>
+                    <th scope="col"  jhiSortBy="notes">
+                        <span jhiTranslate="twentyOnePointsApp.point.notes">Notes</span>
+                        <fa-icon icon="sort"></fa-icon>
+                    </th>
+                    <th scope="col"  jhiSortBy="user.login">
+                        <span jhiTranslate="twentyOnePointsApp.point.user">User</span>
+                        <fa-icon icon="sort"></fa-icon>
+                    </th>
                     <th scope="col"></th>
                 </tr>
             </thead>
             <tbody>
                 <tr *ngFor="let point of points ;trackBy: trackId">
-                    <td><a [routerLink]="['/point', point.id, 'view']">{{ point.id }}</a></td>
-                    <td>{{ point.date | date:'mediumDate' }}</td>
-                    <td>{{ point.exercise }}</td>
-                    <td>{{ point.meals }}</td>
-                    <td>{{ point.alcohol }}</td>
+                    <td>
+                        <a [routerLink]="['/point', point.id, 'view']">{{ point.date | date:'mediumDate' }}</a>
+                    </td>
+                    <td class="text-center">
+                        <fa-icon
+                            [icon]="point.exercise ? 'check' : 'times'" aria-hidden="true"
+                            class="{{ point.exercise ? 'text-success': 'text-danger' }}"
+                        ></fa-icon>
+                    </td>
+                    <td class="text-center">
+                        <fa-icon
+                            [icon]="point.meals ? 'check' : 'times'" aria-hidden="true"
+                            class="{{ point.meals ? 'text-success': 'text-danger' }}"
+                        ></fa-icon>
+                    </td>
+                    <td class="text-center">
+                        <fa-icon
+                            [icon]="point.alcohol ? 'check' : 'times'" aria-hidden="true"
+                            class="{{ point.alcohol ? 'text-success': 'text-danger' }}"
+                        ></fa-icon>
+                    </td>
                     <td>{{ point.notes }}</td>
                     <td>
                         {{ point.user?.login }}
@@ -89,13 +137,15 @@
         </table>
     </div>
 
-    <div *ngIf="points && points.length > 0">
-        <div class="row justify-content-center">
-            <jhi-item-count [page]="page" [total]="totalItems" [itemsPerPage]="itemsPerPage"></jhi-item-count>
-        </div>
+    <div *ngIf="points && points.length > 0" class="d-flex justify-content-center w-100 mb-3">
+        <div>
+            <div class="row justify-content-center">
+                <jhi-item-count [page]="page" [total]="totalItems" [itemsPerPage]="itemsPerPage"></jhi-item-count>
+            </div>
 
-        <div class="row justify-content-center">
-            <ngb-pagination [collectionSize]="totalItems" [(page)]="ngbPaginationPage" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage($event)"></ngb-pagination>
+            <div class="row justify-content-center">
+                <ngb-pagination [collectionSize]="totalItems" [(page)]="ngbPaginationPage" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage($event)"></ngb-pagination>
+            </div>
         </div>
     </div>
 </div>

@@ -2,7 +2,7 @@
   "twentyOnePointsApp": {
     "point": {
       "home": {
-        "title": "Points",
+        "title": "Daily Points",
         "createLabel": "Create a new Point",
         "createOrEditLabel": "Create or edit a Point",
         "search": "Search for Point",
@@ -18,9 +18,9 @@
         "title": "Point"
       },
       "date": "Date",
-      "exercise": "Exercise",
-      "meals": "Meals",
-      "alcohol": "Alcohol",
+      "exercise": "Did you exercise ?",
+      "meals": "Did you eat well ?",
+      "alcohol": "Did you drink responsibly ?",
       "notes": "Notes",
       "user": "User"
     }
