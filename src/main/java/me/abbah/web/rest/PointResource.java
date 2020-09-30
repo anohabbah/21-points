@@ -119,7 +119,12 @@ public class PointResource {
     @GetMapping("/points")
     public ResponseEntity<List<Point>> getAllPoints(Pageable pageable) {
         log.debug("REST request to get a page of Points");
-        Page<Point> page = pointRepository.findAll(pageable);
+        Page<Point> page;
+        if (SecurityUtils.isCurrentUserInRole(AuthoritiesConstants.ADMIN)) {
+            page = this.pointRepository.findAllByOrderByDateDesc(pageable);
+        } else {
+            page = this.pointRepository.findByUserIsCurrentUser(pageable);
+        }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

@@ -5,10 +5,8 @@ import me.abbah.domain.Point;
 import me.abbah.repository.PointRepository;
 import me.abbah.repository.UserRepository;
 import me.abbah.repository.search.PointSearchRepository;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +16,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MockMvcBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
@@ -35,7 +31,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -90,7 +87,7 @@ public class PointResourceIT {
 
     /**
      * Create an entity for this test.
-     *
+     * <p>
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
@@ -103,9 +100,10 @@ public class PointResourceIT {
             .notes(DEFAULT_NOTES);
         return point;
     }
+
     /**
      * Create an updated entity for this test.
-     *
+     * <p>
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
@@ -132,7 +130,7 @@ public class PointResourceIT {
         // Create security-aware mockMvc
         this.restPointMockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
         // Create the Point
-        restPointMockMvc.perform(post("/api/points")
+        restPointMockMvc.perform(post("/api/points").with(user("user"))
             .contentType(MediaType.APPLICATION_JSON)
             .content(TestUtil.convertObjectToJsonBytes(point)))
             .andExpect(status().isCreated());
@@ -173,7 +171,6 @@ public class PointResourceIT {
         verify(mockPointSearchRepository, times(0)).save(point);
     }
 
-
     @Test
     @Transactional
     public void checkDateIsRequired() throws Exception {
@@ -199,8 +196,17 @@ public class PointResourceIT {
         // Initialize the database
         pointRepository.saveAndFlush(point);
 
+        // Create security-aware mockMvc
+        this.restPointMockMvc = MockMvcBuilders
+            .webAppContextSetup(context)
+            .apply(springSecurity())
+            .build();
+
         // Get all the pointList
-        restPointMockMvc.perform(get("/api/points?sort=id,desc"))
+        restPointMockMvc.perform(
+            get("/api/points?sort=id,desc")
+                .with(user("admin").roles("ADMIN"))
+        )
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(point.getId().intValue())))
@@ -228,6 +234,7 @@ public class PointResourceIT {
             .andExpect(jsonPath("$.alcohol").value(DEFAULT_ALCOHOL))
             .andExpect(jsonPath("$.notes").value(DEFAULT_NOTES));
     }
+
     @Test
     @Transactional
     public void getNonExistingPoint() throws Exception {
