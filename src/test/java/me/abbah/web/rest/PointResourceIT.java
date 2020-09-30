@@ -3,6 +3,7 @@ package me.abbah.web.rest;
 import me.abbah.TwentyOnePointsApp;
 import me.abbah.domain.Point;
 import me.abbah.repository.PointRepository;
+import me.abbah.repository.UserRepository;
 import me.abbah.repository.search.PointSearchRepository;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -17,8 +18,13 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MockMvcBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.WebApplicationContext;
+
 import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -29,6 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -58,6 +65,12 @@ public class PointResourceIT {
 
     @Autowired
     private PointRepository pointRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private WebApplicationContext context;
 
     /**
      * This repository is mocked in the me.abbah.repository.search test package.
@@ -115,6 +128,9 @@ public class PointResourceIT {
     @Transactional
     public void createPoint() throws Exception {
         int databaseSizeBeforeCreate = pointRepository.findAll().size();
+
+        // Create security-aware mockMvc
+        this.restPointMockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
         // Create the Point
         restPointMockMvc.perform(post("/api/points")
             .contentType(MediaType.APPLICATION_JSON)
@@ -194,7 +210,7 @@ public class PointResourceIT {
             .andExpect(jsonPath("$.[*].alcohol").value(hasItem(DEFAULT_ALCOHOL)))
             .andExpect(jsonPath("$.[*].notes").value(hasItem(DEFAULT_NOTES)));
     }
-    
+
     @Test
     @Transactional
     public void getPoint() throws Exception {

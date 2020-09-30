@@ -2,7 +2,10 @@ package me.abbah.web.rest;
 
 import me.abbah.domain.Point;
 import me.abbah.repository.PointRepository;
+import me.abbah.repository.UserRepository;
 import me.abbah.repository.search.PointSearchRepository;
+import me.abbah.security.AuthoritiesConstants;
+import me.abbah.security.SecurityUtils;
 import me.abbah.web.rest.errors.BadRequestAlertException;
 
 import io.github.jhipster.web.util.HeaderUtil;
@@ -49,9 +52,16 @@ public class PointResource {
 
     private final PointSearchRepository pointSearchRepository;
 
-    public PointResource(PointRepository pointRepository, PointSearchRepository pointSearchRepository) {
+    private final UserRepository userRepository;
+
+    public PointResource(
+        PointRepository pointRepository,
+        PointSearchRepository pointSearchRepository,
+        UserRepository userRepository
+    ) {
         this.pointRepository = pointRepository;
         this.pointSearchRepository = pointSearchRepository;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -66,6 +76,10 @@ public class PointResource {
         log.debug("REST request to save Point : {}", point);
         if (point.getId() != null) {
             throw new BadRequestAlertException("A new point cannot already have an ID", ENTITY_NAME, "idexists");
+        }
+        if (!SecurityUtils.isCurrentUserInRole(AuthoritiesConstants.ADMIN)) {
+            log.debug("No user passed in, using current user : {}", SecurityUtils.getCurrentUserLogin());
+            point.setUser(this.userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get());
         }
         Point result = pointRepository.save(point);
         pointSearchRepository.save(result);
