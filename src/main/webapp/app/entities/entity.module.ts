@@ -5,19 +5,19 @@ import { RouterModule } from '@angular/router';
   imports: [
     RouterModule.forChild([
       {
-        path: 'point',
+        path: 'points',
         loadChildren: () => import('./point/point.module').then(m => m.TwentyOnePointsPointModule),
       },
       {
-        path: 'preference',
+        path: 'preferences',
         loadChildren: () => import('./preference/preference.module').then(m => m.TwentyOnePointsPreferenceModule),
       },
       {
-        path: 'weight',
+        path: 'weights',
         loadChildren: () => import('./weight/weight.module').then(m => m.TwentyOnePointsWeightModule),
       },
       {
-        path: 'blood-pressure',
+        path: 'blood-pressures',
         loadChildren: () => import('./blood-pressure/blood-pressure.module').then(m => m.TwentyOnePointsBloodPressureModule),
       },
       /* jhipster-needle-add-entity-route - JHipster will add entity modules routes here */

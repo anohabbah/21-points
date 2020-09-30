@@ -127,7 +127,7 @@ export class BloodPressureComponent implements OnInit, OnDestroy {
     this.page = page;
     this.ngbPaginationPage = this.page;
     if (navigate) {
-      this.router.navigate(['/blood-pressure'], {
+      this.router.navigate(['/blood-pressures'], {
         queryParams: {
           page: this.page,
           size: this.itemsPerPage,

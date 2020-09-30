@@ -127,7 +127,7 @@ export class PointComponent implements OnInit, OnDestroy {
     this.page = page;
     this.ngbPaginationPage = this.page;
     if (navigate) {
-      this.router.navigate(['/point'], {
+      this.router.navigate(['/points'], {
         queryParams: {
           page: this.page,
           size: this.itemsPerPage,

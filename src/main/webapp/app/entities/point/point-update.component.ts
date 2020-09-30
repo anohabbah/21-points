@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -62,7 +61,11 @@ export class PointUpdateComponent implements OnInit {
 
   save(): void {
     this.isSaving = true;
-    const point = this.createFromForm();
+    const point: IPoint = this.createFromForm();
+    point.exercise = point.exercise ? 1 : 0;
+    point.meals = point.meals ? 1 : 0;
+    point.alcohol = point.alcohol ? 1 : 0;
+
     if (point.id !== undefined) {
       this.subscribeToSaveResponse(this.pointService.update(point));
     } else {

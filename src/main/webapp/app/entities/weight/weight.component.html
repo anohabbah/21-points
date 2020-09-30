@@ -2,7 +2,11 @@
     <h2 id="page-heading">
         <span jhiTranslate="twentyOnePointsApp.weight.home.title">Weights</span>
 
-        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-weight" [routerLink]="['/weight/new']">
+        <button
+            id="jh-create-entity"
+            class="btn btn-primary float-right jh-create-entity create-weight"
+            [routerLink]="['/weights/new']"
+        >
             <fa-icon icon="plus"></fa-icon>
             <span class="hidden-sm-down"  jhiTranslate="twentyOnePointsApp.weight.home.createLabel">
             Create a new Weight
@@ -49,7 +53,7 @@
             </thead>
             <tbody>
                 <tr *ngFor="let weight of weights ;trackBy: trackId">
-                    <td><a [routerLink]="['/weight', weight.id, 'view']">{{ weight.id }}</a></td>
+                    <td><a [routerLink]="['/weights', weight.id, 'view']">{{ weight.id }}</a></td>
                     <td>{{ weight.timestamp | date:'mediumDate' }}</td>
                     <td>{{ weight.value }}</td>
                     <td>
@@ -58,14 +62,14 @@
                     <td class="text-right">
                         <div class="btn-group">
                             <button type="submit"
-                                    [routerLink]="['/weight', weight.id, 'view']"
+                                    [routerLink]="['/weights', weight.id, 'view']"
                                     class="btn btn-info btn-sm">
                                 <fa-icon icon="eye"></fa-icon>
                                 <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
                             </button>
 
                             <button type="submit"
-                                    [routerLink]="['/weight', weight.id, 'edit']"
+                                    [routerLink]="['/weights', weight.id, 'edit']"
                                     class="btn btn-primary btn-sm">
                                 <fa-icon icon="pencil-alt"></fa-icon>
                                 <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
@@ -89,7 +93,14 @@
         </div>
 
         <div class="row justify-content-center">
-            <ngb-pagination [collectionSize]="totalItems" [(page)]="ngbPaginationPage" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage($event)"></ngb-pagination>
+            <ngb-pagination
+                [collectionSize]="totalItems"
+                [(page)]="ngbPaginationPage"
+                [pageSize]="itemsPerPage"
+                [maxSize]="5"
+                [rotate]="true"
+                [boundaryLinks]="true"
+                (pageChange)="loadPage($event)"></ngb-pagination>
         </div>
     </div>
 </div>

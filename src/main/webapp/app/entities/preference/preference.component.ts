@@ -127,7 +127,7 @@ export class PreferenceComponent implements OnInit, OnDestroy {
     this.page = page;
     this.ngbPaginationPage = this.page;
     if (navigate) {
-      this.router.navigate(['/preference'], {
+      this.router.navigate(['/preferences'], {
         queryParams: {
           page: this.page,
           size: this.itemsPerPage,

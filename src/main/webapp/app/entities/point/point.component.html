@@ -9,7 +9,7 @@
         <button
             id="jh-create-entity"
             class="btn btn-primary float-right jh-create-entity create-point"
-            [routerLink]="['/point/new']"
+            [routerLink]="['/points/new']"
             [ngbTooltip]="addTooltip"
             placement="bottom"
         >
@@ -43,17 +43,18 @@
         </form>
     </div>
 
-    <jhi-alert-error></jhi-alert-error>
+    <div class="col">
+        <jhi-alert-error></jhi-alert-error>
 
-    <jhi-alert></jhi-alert>
+        <jhi-alert></jhi-alert>
 
-    <div class="alert alert-warning" id="no-result" *ngIf="points?.length === 0">
-        <span jhiTranslate="twentyOnePointsApp.point.home.notFound">No points found</span>
-    </div>
+        <div class="alert alert-warning" id="no-result" *ngIf="points?.length === 0">
+            <span jhiTranslate="twentyOnePointsApp.point.home.notFound">No points found</span>
+        </div>
 
-    <div class="table-responsive" id="entities" *ngIf="points && points.length > 0">
-        <table class="table table-striped" aria-describedby="page-heading">
-            <thead>
+        <div class="table-responsive" id="entities" *ngIf="points && points.length > 0">
+            <table class="table table-striped" aria-describedby="page-heading">
+                <thead>
                 <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" [callback]="loadPage.bind(this)">
                     <th scope="col"  jhiSortBy="date">
                         <span jhiTranslate="twentyOnePointsApp.point.date">Date</span>
@@ -81,11 +82,11 @@
                     </th>
                     <th scope="col"></th>
                 </tr>
-            </thead>
-            <tbody>
+                </thead>
+                <tbody>
                 <tr *ngFor="let point of points ;trackBy: trackId">
                     <td>
-                        <a [routerLink]="['/point', point.id, 'view']">{{ point.date | date:'mediumDate' }}</a>
+                        <a [routerLink]="['/points', point.id, 'view']">{{ point.date | date:'mediumDate' }}</a>
                     </td>
                     <td class="text-center">
                         <fa-icon
@@ -112,14 +113,14 @@
                     <td class="text-right">
                         <div class="btn-group">
                             <button type="submit"
-                                    [routerLink]="['/point', point.id, 'view']"
+                                    [routerLink]="['/points', point.id, 'view']"
                                     class="btn btn-info btn-sm">
                                 <fa-icon icon="eye"></fa-icon>
                                 <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
                             </button>
 
                             <button type="submit"
-                                    [routerLink]="['/point', point.id, 'edit']"
+                                    [routerLink]="['/points', point.id, 'edit']"
                                     class="btn btn-primary btn-sm">
                                 <fa-icon icon="pencil-alt"></fa-icon>
                                 <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
@@ -133,18 +134,26 @@
                         </div>
                     </td>
                 </tr>
-            </tbody>
-        </table>
-    </div>
+                </tbody>
+            </table>
+        </div>
 
-    <div *ngIf="points && points.length > 0" class="d-flex justify-content-center w-100 mb-3">
-        <div>
-            <div class="row justify-content-center">
-                <jhi-item-count [page]="page" [total]="totalItems" [itemsPerPage]="itemsPerPage"></jhi-item-count>
-            </div>
+        <div *ngIf="points && points.length > 0" class="d-flex justify-content-center w-100 mb-3">
+            <div>
+                <div class="row justify-content-center">
+                    <jhi-item-count [page]="page" [total]="totalItems" [itemsPerPage]="itemsPerPage"></jhi-item-count>
+                </div>
 
-            <div class="row justify-content-center">
-                <ngb-pagination [collectionSize]="totalItems" [(page)]="ngbPaginationPage" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage($event)"></ngb-pagination>
+                <div class="row justify-content-center">
+                    <ngb-pagination
+                        [collectionSize]="totalItems"
+                        [(page)]="ngbPaginationPage"
+                        [pageSize]="itemsPerPage"
+                        [maxSize]="5"
+                        [rotate]="true"
+                        [boundaryLinks]="true"
+                        (pageChange)="loadPage($event)"></ngb-pagination>
+                </div>
             </div>
         </div>
     </div>

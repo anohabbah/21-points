@@ -127,7 +127,7 @@ export class WeightComponent implements OnInit, OnDestroy {
     this.page = page;
     this.ngbPaginationPage = this.page;
     if (navigate) {
-      this.router.navigate(['/weight'], {
+      this.router.navigate(['/weights'], {
         queryParams: {
           page: this.page,
           size: this.itemsPerPage,
